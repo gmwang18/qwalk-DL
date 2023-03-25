@@ -133,6 +133,10 @@ public:
     return 1;
   }
 
+  doublevar getDensity() {
+    return totnelectrons/cellVolume;
+  }
+
   void kpoint(Array1 <doublevar> & kp) {
     kp=kpt;
   }

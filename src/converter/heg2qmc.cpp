@@ -40,7 +40,7 @@ void write_basis(string oname, int twist, double k0,
 		 int* kx, int* ky, int* kz, int* idx,
 		 int basissize, int outprec);
 void write_slater(string oname, int twist, int* Ne);
-void write_bcs(string oname, int twist, int* Ne, int nmo);
+void write_bcs(string oname, int twist, int* Ne, int nmo, double k_f);
 void write_orb(string oname, int twist, int basissize, int nmo,
 	       int first_k2);
 void write_sys(string oname, int twist, int tw[4][3], int* Ne, double L,
@@ -139,6 +139,7 @@ int main(int argc, char ** argv) {
   cin >> rs;
   cout << endl;
   double L=rs*pow(4.0/3*(Ne[0]+Ne[1])*pi,1.0/3);
+  double k_f = pow(3*pi*pi*(Ne[0]+Ne[1]),1.0/3)/L;
 #ifdef PBC_ONLY
   double k0=2*pi/L;  // for the PBC only version
 #else
@@ -330,7 +331,7 @@ int main(int argc, char ** argv) {
 
   // write slater determinant
   write_slater(oname, twist, Ne);
-  if ( bcs_switch ) write_bcs(oname, twist, Ne, nmo);
+  if ( bcs_switch ) write_bcs(oname, twist, Ne, nmo, k_f);
   
   // write orb file
   write_orb(oname, twist, basissize, nmo, k2[idx[0]]);
@@ -508,7 +509,7 @@ void write_slater(string oname, int twist, int* Ne) {
   // }}}
 }
 
-void write_bcs(string oname, int twist, int* Ne, int nmo) {
+void write_bcs(string oname, int twist, int* Ne, int nmo, double k_f) {
   // {{{ .
 
   int nmo_slater;
@@ -542,6 +543,7 @@ void write_bcs(string oname, int twist, int* Ne, int nmo) {
   bcsout << " }" << endl;
   // following NPAIRS is for unpolarized case only, will investigate later
   bcsout << " NPAIRS { " << Ne[0] << " " << Ne[1] << " 0 }" << endl;
+  bcsout << " FERMI_K { " << k_f << " }" << endl; 
   bcsout << " PFWT { 1 }" << endl;
   bcsout << " PAIRING_ORBITAL {" << endl;
   bcsout << "  ORBITALS_IN_PAIRING {" << endl;

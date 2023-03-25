@@ -9,6 +9,31 @@
 #include "Pfaff_wf_data.h"
 
 
+doublevar sph_bessel(doublevar x, int n)
+{
+  switch(n)
+  {
+    case 0:
+      return sin(x)/x;
+    case 1:
+      return sin(x)/x/x - cos(x);
+    case 2:
+      return (3/x/x-1)*sin(x)/x - 3*cos(x)/x/x;
+    case 3:
+      return (15/x/x/x-6/x)*sin(x)/x - (15/x/x-1)*cos(x)/x;
+    default:
+      error("Do not have spherical bessel functions of higher order than 3", n);
+      return 0; 
+  }
+}
+
+
+//doublevar fermi_k(System * & sysptr)
+//{
+//  doublevar rho = sysptr->getDensity();
+//  doublevar k_f = pow(3*pi*pi*rho, 0.33333333333);
+//  return k_f;
+//}
 
 
 //----------------------------------------------------------------------
@@ -330,13 +355,24 @@ doublevar SingletPairFunction(int i, int j,
   if (norm<coef_eps )
     return 0.0;
   else {
-    //cout << "singletpairfunc\n";
+    //cout << "singletpairfunc printing\n";
     doublevar temp=0.0;
     int count=0;
     int d=0;
     int dim=occupation_pos.GetSize();
+
+    //for (int ii=0;ii<dim;ii++){
+    //  cout << typeid(occupation_pos(ii)).name() << " ";
+    //  cout << occupation_pos(ii) << " ";
+    //}
+    //cout << "\n";
+    for (int ii=0;ii<dim;ii++){
+      cout << occupation_pos(ii) << " " << moVal(d,i,occupation_pos(ii)) << endl;
+    }
+
     for (int k=0;k<dim;k++)
       for (int l=k;l<dim;l++){
+	//cout << "count: " << count << ", singletorb(count): " << singletorb(count) << endl;
 	if (fabs(singletorb(count))>coef_eps){
 	  if (k!=l)
 	    temp+=0.70710678118654752440*
@@ -1585,6 +1621,9 @@ void Pfaff_wf::updateVal(Pfaff_wf_data * dataptr, Sample_point * sample, int e)
   int downdownpairs=dataptr->npairs(1);
   int nopairs=dataptr->npairs(2);
   int totelectrons=nelectrons(0)+nelectrons(1);
+  double kf=dataptr->kf;
+  //cout << "In updateVal Function, Fermi K is: " << kf << endl;
+
   Array3 <doublevar> moVal_temmp(5, totelectrons, updatedMoVal.GetDim(0));
   doublevar ratio;
   
@@ -1912,6 +1951,8 @@ void Pfaff_wf::updateLap(
   int nopairs=dataptr->npairs(2);
   //  int ntote_pairs=dataptr->ntote_pairs;
   Array1 <doublevar> elecpos(3);
+  double kf=dataptr->kf;
+  cout << "In updateLap Function, Fermi K is: " << kf << endl;
 
   
   doublevar ratio;

@@ -19,6 +19,7 @@ void Pfaff_wf_data::read(vector <string> & words, unsigned int & pos,
   coef_eps=1e-12; //default value
   //cout <<"Start wf read"<<endl;
   vector <string> strpfwt;
+  vector <string> strkf;
   vector <vector <string> > statevec;
   unsigned int startpos=pos;
   //unsigned int tmp;
@@ -44,6 +45,13 @@ void Pfaff_wf_data::read(vector <string> & words, unsigned int & pos,
   if( (npairs(0)+ npairs(1)+ npairs(2))%2!=0)
     error("need even number of elements in pffafian matrix");
   
+  pos=startpos;
+  kf=0.0;
+  if (readsection(words, pos, strkf, "FERMI_K")){
+    kf=atof(strkf[0].c_str());
+  }
+  //cout << "Fermi K is: " << kf << endl;
+
   pos=startpos;
   if (readsection(words, pos, strpfwt, "PFWT")){
     npf=strpfwt.size();
