@@ -344,49 +344,74 @@ doublevar TripletPairFunction(int i, int j,
 //----------------------------------------------------------------------
 
 
-doublevar SingletPairFunction(int i, int j, 
-                              const Array3 <doublevar> & moVal,
-                              const Array1 <int> & occupation_pos,
-                              const Array1 <doublevar> & singletorb,
-                              const doublevar & norm,
-			      doublevar coef_eps
+//doublevar SingletPairFunction(int i, int j, 
+//                              const Array3 <doublevar> & moVal,
+//                              const Array1 <int> & occupation_pos,
+//                              const Array1 <doublevar> & singletorb,
+//                              const doublevar & norm,
+//			      doublevar coef_eps
+//                              )
+//{
+//  if (norm<coef_eps )
+//    return 0.0;
+//  else {
+//    //cout << "singletpairfunc printing\n";
+//    doublevar temp=0.0;
+//    int count=0;
+//    int d=0;
+//    int dim=occupation_pos.GetSize();
+//
+//    //for (int ii=0;ii<dim;ii++){
+//    //  cout << typeid(occupation_pos(ii)).name() << " ";
+//    //  cout << occupation_pos(ii) << " ";
+//    //}
+//    //cout << "\n";
+//    //for (int ii=0;ii<dim;ii++){
+//    //  cout << occupation_pos(ii) << " " << moVal(d,i,occupation_pos(ii)) << endl;
+//    //}
+//
+//    for (int k=0;k<dim;k++)
+//      for (int l=k;l<dim;l++){
+//	//cout << "count: " << count << ", singletorb(count): " << singletorb(count) << endl;
+//	if (fabs(singletorb(count))>coef_eps){
+//	  if (k!=l)
+//	    temp+=0.70710678118654752440*
+//	      singletorb(count)*
+//	      (moVal(d,i,occupation_pos(k))*moVal(d,j,occupation_pos(l))
+//	       +moVal(d,i,occupation_pos(l))*moVal(d,j,occupation_pos(k)));
+//	  else
+//	    temp+=singletorb(count)*moVal(d,i,occupation_pos(k))*moVal(d,j,occupation_pos(l));
+//	}
+//	count++;
+//      }
+//    return temp/norm; 
+//  }
+//}
+
+
+
+doublevar SingletPairFunction(int i, int j,
+		              const Array2 <doublevar> & allelecpos,
+		              doublevar kf
                               )
 {
-  if (norm<coef_eps )
-    return 0.0;
-  else {
-    //cout << "singletpairfunc printing\n";
-    doublevar temp=0.0;
-    int count=0;
-    int d=0;
-    int dim=occupation_pos.GetSize();
-
-    //for (int ii=0;ii<dim;ii++){
-    //  cout << typeid(occupation_pos(ii)).name() << " ";
-    //  cout << occupation_pos(ii) << " ";
-    //}
-    //cout << "\n";
-    for (int ii=0;ii<dim;ii++){
-      cout << occupation_pos(ii) << " " << moVal(d,i,occupation_pos(ii)) << endl;
-    }
-
-    for (int k=0;k<dim;k++)
-      for (int l=k;l<dim;l++){
-	//cout << "count: " << count << ", singletorb(count): " << singletorb(count) << endl;
-	if (fabs(singletorb(count))>coef_eps){
-	  if (k!=l)
-	    temp+=0.70710678118654752440*
-	      singletorb(count)*
-	      (moVal(d,i,occupation_pos(k))*moVal(d,j,occupation_pos(l))
-	       +moVal(d,i,occupation_pos(l))*moVal(d,j,occupation_pos(k)));
-	  else
-	    temp+=singletorb(count)*moVal(d,i,occupation_pos(k))*moVal(d,j,occupation_pos(l));
-	}
-	count++;
-      }
-    return temp/norm; 
+  doublevar temp=0.0;
+  int order=1;
+  doublevar temp_dist=0.0;
+  for (int m=0;m<3;m++){
+    temp_dist+=(allelecpos(i,m)-allelecpos(j,m))*(allelecpos(i,m)-allelecpos(j,m));
   }
+  cout << "electron " << i << "pos: " << allelecpos(i,0) << ", " << allelecpos(i,1) << ", " << allelecpos(i,2) << endl; 
+  doublevar dist_ij=sqrt(temp_dist);
+
+  doublevar kR=kf*dist_ij;
+  
+  temp=sph_bessel(kR, order)/kR;
+  return temp;
+  
 }
+
+
 
 doublevar UnpairedOrbFunction(int i, int l,  
                               const Array3 <doublevar> & moVal, 
@@ -910,6 +935,7 @@ doublevar UnpairedOrbFunctionHess(int i, int l,
 void UpdatePfaffianRowVal(Array1 <doublevar> & mopfaff_row, 
                           int & e,  
                           const Array3 <doublevar> &  moVal, 
+			  const Array2 <doublevar> & allelecpos,
                           const Array1 < Array1 <int> > & occupation_pos,
                           const Array1 <int> & npairs, 
                           const Array2 <int> & order_in_pfaffian,
@@ -918,6 +944,7 @@ void UpdatePfaffianRowVal(Array1 <doublevar> & mopfaff_row,
                           const Array1 < Array1 <doublevar> > & singletorb,
                           const Array1 < Array1 <doublevar> > & unpairedorb,
                           const Array1 < Array1 <doublevar> > & normalization,
+			  doublevar kf,
                           doublevar coef_eps
                           )
 {
@@ -933,10 +960,11 @@ void UpdatePfaffianRowVal(Array1 <doublevar> & mopfaff_row,
                                            tripletorbuu(pos), normalization(pos)(0),coef_eps); 
       }
       else if (j<npairs(0)+npairs(1)){
-	mopfaff_row(j)=SingletPairFunction(e, j, moVal, 
-                                           occupation_pos(pos), 
-                                           singletorb(pos), 
-                                           normalization(pos)(2),coef_eps);
+	//mopfaff_row(j)=SingletPairFunction(e, j, moVal, 
+        //                                   occupation_pos(pos), 
+        //                                   singletorb(pos), 
+        //                                   normalization(pos)(2),coef_eps);
+	mopfaff_row(j)=SingletPairFunction(e, j, allelecpos, kf);
       }
       else {
 	mopfaff_row(j)=UnpairedOrbFunction(e, j- npairs(0)-npairs(1), 
@@ -951,10 +979,11 @@ void UpdatePfaffianRowVal(Array1 <doublevar> & mopfaff_row,
     for(int j=0;j<npairs(0)+npairs(1)+npairs(2);j++){
       pos=order_in_pfaffian(e,j);
       if (j<npairs(0)){
-	mopfaff_row(j)=-SingletPairFunction(e, j, moVal, 
-                                            occupation_pos(pos), 
-                                            singletorb(pos), 
-                                            normalization(pos)(2),coef_eps);
+	//mopfaff_row(j)=-SingletPairFunction(e, j, moVal, 
+        //                                    occupation_pos(pos), 
+        //                                    singletorb(pos), 
+        //                                    normalization(pos)(2),coef_eps);
+	mopfaff_row(j)=SingletPairFunction(e, j, allelecpos, kf);
       }
       else if (j<npairs(0)+npairs(1)){
 	mopfaff_row(j)=TripletPairFunction(e, j, moVal, occupation_pos(pos), 
@@ -1142,6 +1171,7 @@ void UpdatePfaffianRowHess( Array1 < Array2 <doublevar> > & mopfaff_row,
 //----------------------------------------------------------------------
 void FillPfaffianMatrix( Array2 <doublevar> & mopfaff_tot,  
                          const Array3 <doublevar> &  moVal,
+			 const Array2 <doublevar> & allelecpos,
                          const Array1 < Array1 <int> > & occupation_pos,
                          const Array1 <int> & npairs, 
                          const Array2 <int> & order_in_pfaffian,
@@ -1150,6 +1180,7 @@ void FillPfaffianMatrix( Array2 <doublevar> & mopfaff_tot,
                          const Array1 < Array1 <doublevar> > & singletorb,
                          const Array1 < Array1 <doublevar> > & unpairedorb,
                          const Array1 < Array1 <doublevar> > & normalization,
+			 doublevar kf,
                          doublevar  coef_eps
                          )
 {
@@ -1166,10 +1197,11 @@ void FillPfaffianMatrix( Array2 <doublevar> & mopfaff_tot,
       }
       else if (j<npairs(0)+npairs(1)){
         if (i<npairs(0)){
-	  mopfaff_tot(i,j)=SingletPairFunction(i, j, moVal,
-                                               occupation_pos(pos),
-                                               singletorb(pos), 
-                                               normalization(pos)(2),coef_eps);
+	  //mopfaff_tot(i,j)=SingletPairFunction(i, j, moVal,
+          //                                     occupation_pos(pos),
+          //                                     singletorb(pos), 
+          //                                     normalization(pos)(2),coef_eps);
+	  mopfaff_tot(i,j)=SingletPairFunction(i, j, allelecpos, kf);
 	}
         else { // filling row(i) with i> npairs(0)
 	  mopfaff_tot(i,j)=TripletPairFunction(i, j, moVal,
@@ -1621,7 +1653,6 @@ void Pfaff_wf::updateVal(Pfaff_wf_data * dataptr, Sample_point * sample, int e)
   int downdownpairs=dataptr->npairs(1);
   int nopairs=dataptr->npairs(2);
   int totelectrons=nelectrons(0)+nelectrons(1);
-  double kf=dataptr->kf;
   //cout << "In updateVal Function, Fermi K is: " << kf << endl;
 
   Array3 <doublevar> moVal_temmp(5, totelectrons, updatedMoVal.GetDim(0));
@@ -1660,7 +1691,9 @@ void Pfaff_wf::updateVal(Pfaff_wf_data * dataptr, Sample_point * sample, int e)
   Array1 <doublevar> mopfaff_row(upuppairs+downdownpairs+nopairs);
   Array1 <doublevar> mopfaff_column(upuppairs+downdownpairs+nopairs);
 
-  
+  int tote=dataptr->tote;
+  Array2 <doublevar> allelecpos(tote,3);
+  sample->getAllElectronPos(allelecpos);
 
  
   for (int pf=0;pf<npf;pf++){
@@ -1668,6 +1701,7 @@ void Pfaff_wf::updateVal(Pfaff_wf_data * dataptr, Sample_point * sample, int e)
     UpdatePfaffianRowVal(mopfaff_row, 
                          e,  
                          moVal,
+			 allelecpos,
                          dataptr->occupation_pos,
                          dataptr->npairs, 
                          dataptr->order_in_pfaffian(pf),
@@ -1676,6 +1710,7 @@ void Pfaff_wf::updateVal(Pfaff_wf_data * dataptr, Sample_point * sample, int e)
                          dataptr->singletorb,
                          dataptr->unpairedorb,
                          dataptr->normalization,
+			 dataptr->kf,
                          coef_eps
                          );
    
@@ -1798,8 +1833,16 @@ void Pfaff_wf::calcLap(Pfaff_wf_data * dataptr, Sample_point * sample)
   //}
     //cout <<"dataptr->occupation_pos(pf).GetSize() "<<dataptr->occupation_pos(pf).GetSize()<<endl;
     
+  Array2 <doublevar> allelecpos(tote,3);
+  sample->getAllElectronPos(allelecpos);
+
+  //for(int i=0;i<allelecpos.GetDim(0);i++){
+  //  cout << "elecpos: " << allelecpos(i,0) <<"  "<< allelecpos(i,1)<<"  "<< allelecpos(i,2) << endl;
+  //}
+  //
     FillPfaffianMatrix( mopfaff_tot(pf),
                         moVal, 
+			allelecpos,
                         dataptr->occupation_pos,
                         dataptr->npairs,
                         dataptr->order_in_pfaffian(pf),
@@ -1808,6 +1851,7 @@ void Pfaff_wf::calcLap(Pfaff_wf_data * dataptr, Sample_point * sample)
                         dataptr->singletorb,
                         dataptr->unpairedorb,
                         dataptr->normalization,
+			dataptr->kf,
                         coef_eps
                         );
     // cout << endl;
@@ -1951,9 +1995,7 @@ void Pfaff_wf::updateLap(
   int nopairs=dataptr->npairs(2);
   //  int ntote_pairs=dataptr->ntote_pairs;
   Array1 <doublevar> elecpos(3);
-  double kf=dataptr->kf;
-  cout << "In updateLap Function, Fermi K is: " << kf << endl;
-
+  //cout << "In updateLap Function, Fermi K is: " << kf << endl;
   
   doublevar ratio;
   for (int pf=0;pf<npf;pf++){
@@ -1973,7 +2015,7 @@ void Pfaff_wf::updateLap(
                                  updatedMoVal);
   
 
-  // sample->getElectronPos(e, elecpos);
+  //sample->getElectronPos(e, elecpos);
   //cout <<  "elecpos:  "<< elecpos(0)<<"  "<< elecpos(1)<<"  "<< elecpos(2)<<endl;
     
   //  for(int i=0; i< updatedMoVal.GetDim(0); i++) {
@@ -1994,10 +2036,21 @@ void Pfaff_wf::updateLap(
   Array1 <doublevar> mopfaff_row(upuppairs+downdownpairs+nopairs);
   Array1 <doublevar> mopfaff_column(upuppairs+downdownpairs+nopairs);
  
+
+  int tote=dataptr->tote;
+  Array2 <doublevar> allelecpos(tote,3);
+  sample->getAllElectronPos(allelecpos);
+
+  //for(int i=0;i<allelecpos.GetDim(0);i++){
+  //  cout << "elecpos: " << allelecpos(i,0) <<"  "<< allelecpos(i,1)<<"  "<< allelecpos(i,2) << endl;
+  //}
+
+
   for (int pf=0;pf<npf;pf++){
     UpdatePfaffianRowVal(mopfaff_row, 
                          e,  
                          moVal, 
+			 allelecpos,
                          dataptr->occupation_pos,
                          dataptr->npairs,
                          dataptr->order_in_pfaffian(pf),
@@ -2006,6 +2059,7 @@ void Pfaff_wf::updateLap(
                          dataptr->singletorb,
                          dataptr->unpairedorb,
                          dataptr->normalization,
+			 dataptr->kf,
                          coef_eps
                          );
   

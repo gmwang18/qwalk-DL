@@ -262,10 +262,14 @@ void Backflow_pf_wf::calcVal(Sample_point * sample)
 
   } 
 
+  Array2 <doublevar> allelecpos(tote,3);
+  sample->getAllElectronPos(allelecpos);
+
   //cout << "doing pfaffian " << endl;
   for (int pf=0;pf<npf;pf++){
     FillPfaffianMatrix( mopfaff_tot(pf),
                         moVal, 
+			allelecpos,
                         parent->pfkeeper.occupation_pos,
                         parent->pfkeeper.npairs,
                         parent->pfkeeper.order_in_pfaffian(pf),
@@ -274,6 +278,7 @@ void Backflow_pf_wf::calcVal(Sample_point * sample)
                         parent->pfkeeper.singletorb,
                         parent->pfkeeper.unpairedorb,
                         parent->pfkeeper.normalization,
+			parent->pfkeeper.kf,
                         coef_eps
                         );
     pfaffVal(pf) = PfaffianInverseMatrix(mopfaff_tot(pf), inverse(pf));
@@ -356,11 +361,15 @@ void Backflow_pf_wf::calcLap(Sample_point * sample)
       }
     }
   } 
+
+  Array2 <doublevar> allelecpos(tote,3);
+  sample->getAllElectronPos(allelecpos);
      
   //cout << "doing pfaffian " << endl;
   for (int pf=0;pf<npf;pf++){
     FillPfaffianMatrix( mopfaff_tot(pf),
                         moVal, 
+			allelecpos,
                         parent->pfkeeper.occupation_pos,
                         parent->pfkeeper.npairs,
                         parent->pfkeeper.order_in_pfaffian(pf),
@@ -369,6 +378,7 @@ void Backflow_pf_wf::calcLap(Sample_point * sample)
                         parent->pfkeeper.singletorb,
                         parent->pfkeeper.unpairedorb,
                         parent->pfkeeper.normalization,
+			parent->pfkeeper.kf,
                         coef_eps
                         );
     pfaffVal(pf) = PfaffianInverseMatrix(mopfaff_tot(pf), inverse(pf));

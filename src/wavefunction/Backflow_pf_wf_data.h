@@ -48,6 +48,7 @@ class Pfaffian_keeper {
   Array1 < Array1 <doublevar> > unpairedorb; //!< coeficients for unpaired orbitals
   Array1 < Array1 <doublevar> > normalization; //!< normalization of pairing functions
   Array1 <doublevar> pfwt; //!< pfaffian weight
+  doublevar kf; // !<Fermi Surface
   doublevar coef_eps;
 
 private:

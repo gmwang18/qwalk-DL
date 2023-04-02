@@ -141,6 +141,7 @@ public:
   virtual void getAllElectronPos(Array2 <doublevar> & pos) {
     error("getAllElectronPos not implemented for this sample point");
   }
+  
 
   /*!
     \brief

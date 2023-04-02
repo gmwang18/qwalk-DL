@@ -111,7 +111,7 @@ private:
   
   Array1 <doublevar> pfwt; //!< pfaffian weights
 
-  double  kf; // !<Fermi Surface
+  doublevar  kf; // !<Fermi Surface
  
   int nmo;        //!<Number of molecular orbitals
   int npf;        //!<Number of pfaffians  

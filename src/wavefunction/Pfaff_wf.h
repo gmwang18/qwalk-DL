@@ -46,6 +46,7 @@ void UpdatePfaffianRowHess( Array1 < Array2 <doublevar> > & mopfaff_row,
 
 void FillPfaffianMatrix( Array2 <doublevar> & mopfaff_tot,  
                          const Array3 <doublevar> &  moVal,
+			 const Array2 <doublevar> & allelecpos,
                          const Array1 < Array1 <int> > & occupation_pos,
                          const Array1 <int> & npairs, 
                          const Array2 <int> & order_in_pfaffian,
@@ -54,6 +55,7 @@ void FillPfaffianMatrix( Array2 <doublevar> & mopfaff_tot,
                          const Array1 < Array1 <doublevar> > & singletorb,
                          const Array1 < Array1 <doublevar> > & unpairedorb,
                          const Array1 < Array1 <doublevar> > & alpha_angle,
+			 doublevar kf,
                          doublevar coef_eps
                          );
 
