@@ -110,6 +110,8 @@ private:
   Array1 < Array1 <doublevar> > normalization; //!< coeficients for mixing Singlet and Unpaired w Triplet
   
   Array1 <doublevar> pfwt; //!< pfaffian weights
+
+  doublevar  kf; // !<Fermi Surface
  
   int nmo;        //!<Number of molecular orbitals
   int npf;        //!<Number of pfaffians  
